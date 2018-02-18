@@ -2,10 +2,10 @@
 #export Connection, Node, Graph, populate_graph, shuffle_subgraph, subgraph, swap, neighbor
 
 # Basic graph types declarations and functions
-type Connection
-    to_node::Int
-    distance::Float64
-end
+#type Connection
+#    to_node::Int
+#    distance::Float64
+#end
 
 type Node
     id::Int # should coincide with its index on nodes array
@@ -14,60 +14,44 @@ type Node
     population::Int
     latitude::Float64
     longitude::Float64
-    connections::Array{Connection,1}
     degree::Int
 end
 
 type Graph
     nodes::Array{Node,1}
+    distances::Array{Float64,2}
 end
 
+# Should've used sqlite from the start
+# Reads .txts generated from mysql tables
 function populate_graph(cities_file::AbstractString, connections_file::AbstractString)
-    net = Graph(Node[])    
+    nodes = Node[]    
     open(cities_file) do f
         lines = readlines(f)
         for l in lines
-            print(l)
             words = split(l, "\t")
             words = map(utf8, words)
-            node = Node(parse(Int,words[1]), words[2], words[3], parse(Int,words[4]), parse(Float64,words[5]), parse(Float64,words[6]), Connection[], 0)
-            push!(net.nodes, node)
+            node = Node(parse(Int,words[1]), words[2], words[3], parse(Int,words[4]), parse(Float64,words[5]), parse(Float64,words[6]), 0)
+            push!(nodes, node)
         end
     end
+    distances = fill(-1.0, (length(nodes), length(nodes)))
     open(connections_file) do f
         lines = readlines(f)
         for l in lines
-            print(l)
             words = split(l, "\t")
             words = map(utf8, words)
             from_index = parse(Int, words[1])
             to_index = parse(Int, words[2])
             distance = parse(Float64, words[3])
-            push!(net.nodes[from_index].connections, Connection(to_index, distance)) 
-            net.nodes[from_index].degree += 1
+            distances[from_index, to_index] = distance 
+            distances[to_index, from_index] = distance
         end
     end 
-    net
+    Graph(nodes, distances)
 end
 
-# Might be useful
-function subgraph(graph::Graph, cities::Array{Int,1})
-    nodes = Node[]
-    for c in cities
-        og = graph.nodes[c]
-        conns = Connection[]
-        for i in og.connections
-            if i.to_node in cities
-                push!(conns, Connection(i.to_node, i.distance))
-            end
-        end
-        push!(nodes, Node(c, og.name, og.country, og.population, og.latitude, conns, length(conns)))
-    end
-    Graph(nodes)
-end
-
-function shuffle_subgraph(s::Array{Int,1}, seed)
-    srand(seed)
+function shuffle_solution(s::Array{Int,1}, seed)
     shuffle(MersenneTwister(seed), s)
 end
 
@@ -98,9 +82,7 @@ end
 # Checks if an edge exists on graph g between every pair of consecutive nodes in solution s
 function valid_path(g::Graph, s::Array{Int,1})
     for i in 2:length(s)
-        u = g.nodes[i-1]
-        v = g.nodes[i]
-        if !(v.id in [c.to_node for c in u.connections])
+        if g.distances[i-1,i] == -1
             return false
         end
     end
