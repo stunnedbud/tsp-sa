@@ -4,7 +4,7 @@ include("simulated_annealing.jl")
 
 settings_file = "settings.txt"
 
-println("Loaded dependencies")
+println("Loaded modules")
 
 # Read settings file, save into dictionary
 k = AbstractString[]    
@@ -21,7 +21,10 @@ open(settings_file, "r") do f
     end
 end
 settings = Dict(zip(k,v))
-println(settings)
+println("Settings")
+for (k,v) in settings
+    println(k*": "*string(v))
+end
 
 # Generate graph object from file
 g = populate_graph(settings["db_cities_file"], settings["db_connections_file"])
@@ -41,12 +44,15 @@ println()
 seed = parse(Int, settings["seed"])
 srand(seed)
 
+# Punishment
+punish = calc_punishment(g, parse(Float64,utf8(settings["punishment_factor"])))
+
 # Run heuristic
 for i in 1:parse(Int, settings["runs"])
     current_seed = convert(Int,floor(100000000rand()))
     print("#################################\nCurrent seed: ")
     println(current_seed)
-    s = shuffle_subgraph(cities, current_seed)
+    s = shuffle_solution(cities, current_seed)
     print("Shuffle: ")
     println(s)
     accepted, last, best = acceptance_by_thresholds(g, s, current_seed, parse(Float64,utf8(settings["T"])), parse(Int,utf8(settings["L"])), parse(Float64,utf8(settings["epsilon"])), parse(Float64,utf8(settings["theta"])), parse(Float64,utf8(settings["punishment_factor"])))
@@ -54,11 +60,13 @@ for i in 1:parse(Int, settings["runs"])
     # Save run results to file(s)
     open("results/"*string(current_seed)*".txt", "w") do f
         out = "Run results and settings for seed "*string(current_seed)*"\n\n"
+        out *= "Initial solution:"*string(s)*"\n"
+        out *= "Initial solution's cost: "*string(cost(g, s, punish))*"\n\n"
         out *= "Last solution: "*string(last)*"\n" 
-        out *= "Last solution's cost: "*string(cost(g, last, calc_punishment(g, parse(Float64,utf8(settings["punishment_factor"])))))*"\n"
+        out *= "Last solution's cost: "*string(cost(g, last, punish))*"\n"
         out *= "Valid path: "*string(valid_path(g,last))*"\n\n"
         out *= "Best solution: "*string(best)*"\n"
-        out *= "Best solution's cost: "*string(cost(g, best, calc_punishment(g, parse(Float64,utf8(settings["punishment_factor"])))))*"\n"
+        out *= "Best solution's cost: "*string(cost(g, best, punish))*"\n"
         out *= "Valid path: "*string(valid_path(g,best))*"\n\n"
         print(out)
         for (k,v) in settings

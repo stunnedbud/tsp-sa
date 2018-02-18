@@ -55,7 +55,7 @@ function shuffle_solution(s::Array{Int,1}, seed)
     shuffle(MersenneTwister(seed), s)
 end
 
-# Swaps in place two indexes of a list. Returns g just in case
+# Swaps two indexes of a list. Returns new list.
 function swap(s::Array{Int,1}, u::Int, v::Int)
     #n = copy(g.nodes[u])
     r = copy(s)
@@ -65,17 +65,12 @@ function swap(s::Array{Int,1}, u::Int, v::Int)
     return r
 end
 
-# Calculates a neighbor of the solution. We define a neighbor in TSP as a random permutation of 
+# Calculates a neighbor of the solution. We define a neighbor in TSP as a random swap of two consecutive nodes in a solution 
 function neighbor(s::Array{Int,1}, seed::Int)
     srand(seed)
-    #println(seed)
-    #println(convert( Int, floor(10000rand()%(length(s)+1)) ) )
     u = convert( Int, floor(10000rand()%length(s))+1 )
-    if u == length(s)
-        v = u-1
-    else
-        v = u+1
-    end
+    v = convert( Int, floor(10000rand()%length(s))+1 )
+    #v = u == length(s) ? u-1 : u+1
     swap(s, u, v)
 end
 
