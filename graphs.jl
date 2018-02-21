@@ -48,6 +48,7 @@ function populate_graph(cities_file::AbstractString, connections_file::AbstractS
             distances[to_index, from_index] = distance
         end
     end 
+
     Graph(nodes, distances)
 end
 
@@ -75,9 +76,9 @@ function neighbor(s::Array{Int,1}, seed::Int)
 end
 
 # Checks if an edge exists on graph g between every pair of consecutive nodes in solution s
-function valid_path(g::Graph, s::Array{Int,1})
+function factible_path(g::Graph, s::Array{Int,1})
     for i in 2:length(s)
-        if g.distances[i-1,i] == -1
+        if g.distances[s[i-1],s[i]] == -1
             return false
         end
     end

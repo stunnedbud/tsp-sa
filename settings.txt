@@ -2,7 +2,7 @@
 #Order of lines doesn't matter, you can comment out a line with '#'.
 
 #Master seed for runs because hey it's all random anyway what difference does it make?
-seed=5555555555
+seed=1100000000
 
 #SQL files 
 db_cities_file=cities.txt
@@ -18,13 +18,13 @@ cities=22,74,109,113,117,137,178,180,200,216,272,299,345,447,492,493,498,505,521
 #Lot size
 L=500
 #Initial temperature (atm arbitrary, to be determined by experimental means)
-T=8.0
+T=10.0
 #Inferior limit for temperature
-epsilon=0.0001
+epsilon=0.01
 #Cooling factor (must be Float64 in range 0:1)
-theta=0.99
+theta=0.92
 #Punishment factor
 punishment_factor=3.5
 
 #Number of runs desired
-runs=5
+runs=1000

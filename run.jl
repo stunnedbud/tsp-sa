@@ -41,46 +41,84 @@ println(cities)
 println()
 
 # Get master seed
-seed = parse(Int, settings["seed"])
-srand(seed)
+master_seed = parse(Int, settings["seed"])
+srand(master_seed)
 
 # Punishment
 punish = calc_punishment(g, parse(Float64,utf8(settings["punishment_factor"])))
 
+# Results file
+out = "RUN RESULTS\n\n#######################################\nInitial settings\n"
+for (k,v) in settings
+    out *= k*": "*string(v)*"\n" 
+end 
+out *= "#######################################\n\n"
+open("results/"*string(master_seed)*".txt","w") do f
+    write(f, out)
+end
+open("results/"*string(master_seed)*"_timeseries.dt","w") do f
+    write(f, "")
+end
+
+# Create directory for plots' data
+#timeseries_path ="results/"*string(master_seed)*"/"
+#if !isdir(timeseries_path)
+#    mkdir(timeseries_path)
+#end
+
 # Run heuristic
+abs_best = cities
+best_run = -1
+s = shuffle_solution(cities, master_seed) #initial solution
 for i in 1:parse(Int, settings["runs"])
-    current_seed = convert(Int,floor(100000000rand()))
-    print("#################################\nCurrent seed: ")
-    println(current_seed)
-    s = shuffle_solution(cities, current_seed)
-    print("Shuffle: ")
-    println(s)
-    accepted, last, best = acceptance_by_thresholds(g, s, current_seed, parse(Float64,utf8(settings["T"])), parse(Int,utf8(settings["L"])), parse(Float64,utf8(settings["epsilon"])), parse(Float64,utf8(settings["theta"])), parse(Float64,utf8(settings["punishment_factor"])))
+    current_seed = convert(Int,floor(rand()*10^13))
+    out = "Run #"*string(i)*"\n"
+    out *= "Seed: "
+    out *= string(current_seed)*"\n"
     
-    # Save run results to file(s)
-    open("results/"*string(current_seed)*".txt", "w") do f
-        out = "Run results and settings for seed "*string(current_seed)*"\n\n"
-        out *= "Initial solution:"*string(s)*"\n"
-        out *= "Initial solution's cost: "*string(cost(g, s, punish))*"\n\n"
-        out *= "Last solution: "*string(last)*"\n" 
-        out *= "Last solution's cost: "*string(cost(g, last, punish))*"\n"
-        out *= "Valid path: "*string(valid_path(g,last))*"\n\n"
-        out *= "Best solution: "*string(best)*"\n"
-        out *= "Best solution's cost: "*string(cost(g, best, punish))*"\n"
-        out *= "Valid path: "*string(valid_path(g,best))*"\n\n"
-        print(out)
-        for (k,v) in settings
-            out *= k*" = "*string(v)*"\n"   
-        end
+    last, best = acceptance_by_thresholds(g, s, current_seed, parse(Float64,utf8(settings["T"])), parse(Int,utf8(settings["L"])), parse(Float64,utf8(settings["epsilon"])), parse(Float64,utf8(settings["theta"])), parse(Float64,utf8(settings["punishment_factor"])))
+    
+    s = best
+
+    # Update absolute best found
+    if cost(g, best, punish) < cost(g, abs_best, punish)
+        abs_best = best
+        best_run = i
+    end
+
+    out *= "Last ("*string(cost(g,last,punish))*"): "
+    for j in last
+        out *= string(j)*","
+    end
+    out = out[1:end-1]*"\n" # removes last comma
+    out *= "Best ("*string(cost(g,best,punish))*"): "
+    for j in best
+        out *= string(j)*","
+    end
+    out = out[1:end-1]*"\n\n" # remove last comma
+    print(out) 
+    
+    # Append run results to file
+    open("results/"*string(master_seed)*".txt", "a") do f    
         write(f, out)
     end
+    
     # Save cost data timeseries to plot later
-    open("results/"*string(current_seed)*"_timeseries.dt","w") do f
-        out = ""
-        for c in accepted
-            out *= string(c)*"\n"
-        end
-        write(f, out)
+    open("results/"*string(master_seed)*"_timeseries.dt","a") do f
+        write(f, ""*string(cost(g,best,punish))*"\n")
     end
-    println("Ended run #"*string(i)*" for seed "*string(current_seed))
+end
+
+# Append final results
+out = "\n############################################################\n"
+out *= "Best solution found: \n"
+for j in best_run
+    out *= string(j)*","
+end
+out = out[1:end-1]*"\n" # removes last comma
+out *= "Which costs "*string(cost(g, abs_best, punish))*"\n"
+out *= "From run "*string(best_run)*"\n"
+
+open("results/"*string(master_seed)*".txt","a") do f
+    write(f, out)
 end
