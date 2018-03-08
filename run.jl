@@ -45,7 +45,12 @@ master_seed = parse(Int, settings["seed"])
 srand(master_seed)
 
 # Punishment
-punish = calc_punishment(g, parse(Float64,utf8(settings["punishment_factor"])))
+punish = calc_punishment(g, cities, parse(Float64,utf8(settings["punishment_factor"])))
+#punish = parse(Float64,utf8(settings["punishment_factor"])) * 4976033.95
+
+# Weight average
+average = weight_average(g, cities)
+#average = 2643774.443850045
 
 # Results file
 out = "RUN RESULTS\n\n#######################################\nInitial settings\n"
@@ -56,7 +61,7 @@ out *= "#######################################\n\n"
 open("results/"*string(master_seed)*".txt","w") do f
     write(f, out)
 end
-open("results/"*string(master_seed)*"_timeseries.dt","w") do f
+open("results/150/timeseries.txt","w") do f
     write(f, "")
 end
 
@@ -66,37 +71,37 @@ end
 #    mkdir(timeseries_path)
 #end
 
+
 # Run heuristic
 abs_best = cities
 best_run = -1
-s = shuffle_solution(cities, master_seed) #initial solution
+
 for i in 1:parse(Int, settings["runs"])
     current_seed = convert(Int,floor(rand()*10^13))
+    s = shuffle_solution(cities, current_seed)
     out = "Run #"*string(i)*"\n"
     out *= "Seed: "
     out *= string(current_seed)*"\n"
     
-    last, best = acceptance_by_thresholds(g, s, current_seed, parse(Float64,utf8(settings["T"])), parse(Int,utf8(settings["L"])), parse(Float64,utf8(settings["epsilon"])), parse(Float64,utf8(settings["theta"])), parse(Float64,utf8(settings["punishment_factor"])))
+    last, best = acceptance_by_thresholds(g, s, current_seed, parse(Float64,utf8(settings["T"])), parse(Int,utf8(settings["L"])), parse(Float64,utf8(settings["epsilon"])), parse(Float64,utf8(settings["theta"])), punish, average)
     
-    s = best
-
     # Update absolute best found
-    if cost(g, best, punish) < cost(g, abs_best, punish)
+    if cost(g, best, punish, average) < cost(g, abs_best, punish, average)
         abs_best = best
         best_run = i
     end
 
-    out *= "Last ("*string(cost(g,last,punish))*"): "
+    out *= "Last ["*string(feasible_path(g,last))*"] ("*string(cost(g,last,punish,average))*"): "
     for j in last
         out *= string(j)*","
     end
     out = out[1:end-1]*"\n" # removes last comma
-    out *= "Best ("*string(cost(g,best,punish))*"): "
+    out *= "Best ["*string(feasible_path(g,best))*"] ("*string(cost(g,best,punish,average))*"): "
     for j in best
         out *= string(j)*","
     end
     out = out[1:end-1]*"\n\n" # remove last comma
-    print(out) 
+    print(out)
     
     # Append run results to file
     open("results/"*string(master_seed)*".txt", "a") do f    
@@ -104,9 +109,9 @@ for i in 1:parse(Int, settings["runs"])
     end
     
     # Save cost data timeseries to plot later
-    open("results/"*string(master_seed)*"_timeseries.dt","a") do f
-        write(f, ""*string(cost(g,best,punish))*"\n")
-    end
+    #open("results/"*string(master_seed)*"_timeseries.dt","a") do f
+        #write(f, ""*string(cost(g,best,punish))*"\n")
+    #end
 end
 
 # Append final results
@@ -116,7 +121,7 @@ for j in best_run
     out *= string(j)*","
 end
 out = out[1:end-1]*"\n" # removes last comma
-out *= "Which costs "*string(cost(g, abs_best, punish))*"\n"
+out *= "Which costs "*string(cost(g, abs_best, punish,average))*"\n"
 out *= "From run "*string(best_run)*"\n"
 
 open("results/"*string(master_seed)*".txt","a") do f

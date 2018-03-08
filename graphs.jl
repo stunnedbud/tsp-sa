@@ -1,12 +1,4 @@
-#module graphs
-#export Connection, Node, Graph, populate_graph, shuffle_subgraph, subgraph, swap, neighbor
-
 # Basic graph types declarations and functions
-#type Connection
-#    to_node::Int
-#    distance::Float64
-#end
-
 type Node
     id::Int # should coincide with its index on nodes array
     name::AbstractString
@@ -36,6 +28,7 @@ function populate_graph(cities_file::AbstractString, connections_file::AbstractS
         end
     end
     distances = fill(-1.0, (length(nodes), length(nodes)))
+    i = 0
     open(connections_file) do f
         lines = readlines(f)
         for l in lines
@@ -58,7 +51,6 @@ end
 
 # Swaps two indexes of a list. Returns new list.
 function swap(s::Array{Int,1}, u::Int, v::Int)
-    #n = copy(g.nodes[u])
     r = copy(s)
     n = r[u]
     r[u] = r[v]
@@ -76,7 +68,7 @@ function neighbor(s::Array{Int,1}, seed::Int)
 end
 
 # Checks if an edge exists on graph g between every pair of consecutive nodes in solution s
-function factible_path(g::Graph, s::Array{Int,1})
+function feasible_path(g::Graph, s::Array{Int,1})
     for i in 2:length(s)
         if g.distances[s[i-1],s[i]] == -1
             return false
