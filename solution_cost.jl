@@ -1,7 +1,20 @@
 include("costs.jl")
 
+if length(ARGS) < 1 
+    println("Error: No hay entrada. Introduzca como parámetro la lista de nodos de la solución.")
+    return 0
+end
+
 g = populate_graph("cities.txt","connections.txt")
-s = [611,95,639,278,233,986,79,111,505,281,486,477,576,654,587,872,332,219,206,717,213,308,413,591,991,256,319,981,919,470,69,67,40,735,96,614,203,489,271,159,254,957,447,355,1069,98,688,358,528,893,766,563,885,877,393,347,1016,896,492,323,284,837,257,935,705,796,741,890,871,1034,1080,853,414,670,697,876,757,297,438,408,74,385,302,119,94,547,833,955,552,454,313,700,1072,517,865,712,857,310,669,39,178,497,498,515,243,478,13,535,582,1037,341,557,156,690,189,1002,785,607,395,10,854,93,86,115,107,12,675,186,190,933,571,795,748,1007,359,151,44,299,293,627,637,398,234,679,1057,583,410,337,117,830] # or read from command line
+
+cities_str = split(ARGS[1], ",")
+cities_str = map(utf8, cities_str) # without this parse doesn't work
+s = Int[]
+for i in 1:length(cities_str)
+     push!(s, parse(Int, cities_str[i]))
+end
+
 pun = calc_punishment(g,s,3.5)
 avg = weight_average(g,s)
 c = cost(g,s,pun,avg)
+println(c)

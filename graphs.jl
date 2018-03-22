@@ -14,8 +14,8 @@ type Graph
     distances::Array{Float64,2}
 end
 
-# Should've used sqlite from the start
-# Reads .txts generated from mysql tables
+# (should've used sqlite from the start)
+# Reads .txts generated from mysql tables. 
 function populate_graph(cities_file::AbstractString, connections_file::AbstractString)
     nodes = Node[]    
     open(cities_file) do f
@@ -45,29 +45,31 @@ function populate_graph(cities_file::AbstractString, connections_file::AbstractS
     Graph(nodes, distances)
 end
 
+# Shuffles s using given seed.
 function shuffle_solution(s::Array{Int,1}, seed)
     shuffle(MersenneTwister(seed), s)
 end
 
-# Swaps two indexes of a list. Returns new list.
+# Swaps two indexes of a list, in place.
 function swap(s::Array{Int,1}, u::Int, v::Int)
     r = copy(s)
     n = r[u]
     r[u] = r[v]
     r[v] = n
-    return r
+    r
 end
 
-# Calculates a neighbor of the solution. We define a neighbor in TSP as a random swap of two consecutive nodes in a solution 
+# Calculates a neighbor of the solution. We define a neighbor in TSP as a random swap of two nodes in a solution 
+# Also returns indexes swapped to use maybe on fast cost function.
 function neighbor(s::Array{Int,1}, seed::Int)
-    srand(seed)
+    #srand(seed)
     u = convert( Int, floor(10000rand()%length(s))+1 )
     v = convert( Int, floor(10000rand()%length(s))+1 )
     #v = u == length(s) ? u-1 : u+1
-    swap(s, u, v)
+    swap(s,u,v), u, v
 end
 
-# Checks if an edge exists on graph g between every pair of consecutive nodes in solution s
+# Checks if an edge exists on graph g between every pair of consecutive nodes in solution s.
 function feasible_path(g::Graph, s::Array{Int,1})
     for i in 2:length(s)
         if g.distances[s[i-1],s[i]] == -1

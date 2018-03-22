@@ -1,0 +1,32 @@
+#Settings file. Keep names intact (obviously), use no spaces between =. 
+#Order of lines doesn't matter, you can comment out a line with '#'.
+
+#Master seed. Change it every new set of runs if you don't want to overwrite results (and it's a good idea anyway to randomize it some more)
+seed=40400000006
+#seed=7777000004
+
+#Data files 
+db_cities_file=cities.txt
+db_connections_file=connections.txt
+
+#Subset of cities to apply the heuristic to
+#40
+cities=22,74,109,113,117,137,178,180,200,216,272,299,345,447,492,493,498,505,521,572,607,627,642,679,710,717,747,774,786,829,830,839,853,857,893,921,935,986,1032,1073
+#150
+#cities=10,12,13,39,40,44,67,69,74,79,86,93,94,95,96,98,107,111,115,117,119,151,156,159,178,186,189,190,203,206,213,219,233,234,243,254,256,257,271,278,281,284,293,297,299,302,308,310,313,319,323,332,337,341,347,355,358,359,385,393,395,398,408,410,413,414,438,447,454,470,477,478,486,489,492,497,498,505,515,517,528,535,547,552,557,563,571,576,582,583,587,591,607,611,614,627,637,639,654,669,670,675,679,688,690,697,700,705,712,717,735,741,748,757,766,785,795,796,830,833,837,853,854,857,865,871,872,876,877,885,890,893,896,919,933,935,955,957,981,986,991,1002,1007,1016,1034,1037,1057,1069,1072,1080
+
+#Tuners
+#Lot size
+L=500
+#Initial temperature
+T=8.0
+#Inferior limit for temperature
+epsilon=0.001
+#Cooling factor (Float64 between 0 and 1)
+theta=0.95
+#Punishment factor
+punishment_factor=3.5
+
+#Number of runs desired
+runs=10000
+

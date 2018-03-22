@@ -1,6 +1,11 @@
 include("simulated_annealing.jl")
 
-settings_file = "settings_once.txt"
+if length(ARGS) < 1 
+    println("Error: No se especificó el archivo de settings en la linea de comandos. El programa terminará.")
+    return 0
+end
+
+settings_file = ARGS[1]
 
 println("Loaded modules")
 
@@ -38,8 +43,8 @@ println("\nCities subset:")
 println(cities)
 println()
 
-# Get master seed
-master_seed = parse(Int, settings["seed"])
+# Get seed
+seed = parse(Int, settings["seed"])
 
 # Punishment
 punish = calc_punishment(g, cities, parse(Float64,utf8(settings["punishment_factor"])))
@@ -54,13 +59,13 @@ for (k,v) in settings
     out *= k*": "*string(v)*"\n" 
 end 
 out *= "#######################################\n\n"
-open("results/"*string(master_seed)*".txt","w") do f
+open("results/ONCE_"*string(seed)*".txt","w") do f
     write(f, out)
 end
 
 # Run once
-s = shuffle_solution(cities, current_seed)
-last, best = acceptance_by_thresholds(g, s, current_seed, parse(Float64,utf8(settings["T"])), parse(Int,utf8(settings["L"])), parse(Float64,utf8(settings["epsilon"])), parse(Float64,utf8(settings["theta"])), punish, average)
+s = cities
+last, best = acceptance_by_thresholds(g, s, seed, parse(Float64,utf8(settings["T"])), parse(Int,utf8(settings["L"])), parse(Float64,utf8(settings["epsilon"])), parse(Float64,utf8(settings["theta"])), punish, average, seed)
     
 
 out *= "Last ["*string(feasible_path(g,last))*"] ("*string(cost(g,last,punish,average))*"): "
@@ -76,7 +81,7 @@ out = out[1:end-1]*"\n\n" # remove last comma
 print(out)
 
 # Append run results to file
-open("results/"*string(master_seed)*".txt", "a") do f    
+open("results/ONCE_"*string(seed)*".txt", "a") do f    
 write(f, out)
 end
 

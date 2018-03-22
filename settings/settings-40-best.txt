@@ -1,0 +1,24 @@
+#Settings for BEST 40 run (0.6162)
+
+#Seed
+seed=2191227990106
+
+#Initial permutation
+cities=839,200,921,642,679,893,857,117,1073,216,607,492,299,493,180,505,935,447,747,22,521,627,572,853,986,786,710,717,113,830,345,137,74,774,178,109,1032,829,498,272
+
+#Lot size
+L=500
+#Initial temperature
+T=8.0
+#Inferior limit for temperature
+epsilon=0.001
+#Cooling factor (Float64 between 0 and 1)
+theta=0.95
+#Punishment factor
+punishment_factor=3.5
+
+#Data files 
+db_cities_file=cities.txt
+db_connections_file=connections.txt
+
+
